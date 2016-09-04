@@ -42,6 +42,9 @@
 #include "smp_api.h"
 #endif
 #endif
+#ifdef BLUETOOTH_RTK_COEX
+#include "rtk_parse.h"
+#endif
 
 #if BTM_MAX_LOC_BD_NAME_LEN > 0
 typedef char tBTM_LOC_BD_NAME[BTM_MAX_LOC_BD_NAME_LEN + 1];
@@ -522,7 +525,9 @@ typedef struct
     DEV_CLASS            dev_class;         /* DEV_CLASS of the device            */
     LINK_KEY             link_key;          /* Device link key                    */
     UINT8                pin_code_length;   /* Length of the pin_code used for paring */
-
+#ifdef BLUETOOTH_RTK_COEX
+		UINT8				 profile_map;
+#endif
 #define BTM_SEC_AUTHORIZED      BTM_SEC_FLAG_AUTHORIZED     /* 0x01 */
 #define BTM_SEC_AUTHENTICATED   BTM_SEC_FLAG_AUTHENTICATED  /* 0x02 */
 #define BTM_SEC_ENCRYPTED       BTM_SEC_FLAG_ENCRYPTED      /* 0x04 */

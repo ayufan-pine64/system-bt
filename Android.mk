@@ -1,12 +1,29 @@
 LOCAL_PATH := $(call my-dir)
 
 # Setup Bluetooth local make variables for handling configuration
+
 ifneq ($(BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR),)
   bluetooth_C_INCLUDES := $(BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR)
   bluetooth_CFLAGS += -DHAS_BDROID_BUILDCFG
 else
   bluetooth_C_INCLUDES :=
   bluetooth_CFLAGS += -DHAS_NO_BDROID_BUILDCFG
+endif
+
+ifeq ($(BOARD_HAVE_BLUETOOTH_RTK),true)
+# RealTek Bluetooth private configuration table
+bdroid_CFLAGS := -Wno-unused-parameter
+rtkbt_bdroid_C_INCLUDES += $(LOCAL_PATH)/bta/hh
+rtkbt_bdroid_C_INCLUDES += $(LOCAL_PATH)/bta/dm
+rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK
+rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK_API
+
+ifeq ($(BOARD_HAVE_BLUETOOTH_RTK_COEX),true)
+rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK_COEX
+endif
+
+bdroid_C_INCLUDES += $(rtkbt_bdroid_C_INCLUDES)
+bdroid_CFLAGS += $(rtkbt_bdroid_CFLAGS)
 endif
 
 ifneq ($(BOARD_BLUETOOTH_BDROID_HCILP_INCLUDED),)

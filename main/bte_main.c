@@ -70,6 +70,11 @@
 #endif  // defined(OS_GENERIC)
 #endif  // BT_BLE_STACK_CONF_FILE
 
+#ifdef BLUETOOTH_RTK
+#ifndef BTE_RTK_CONF_FILE
+#define BTE_RTK_CONF_FILE "/etc/bluetooth/rtkbt.conf"
+#endif
+#endif
 /******************************************************************************
 **  Variables
 ******************************************************************************/
@@ -114,6 +119,12 @@ void bte_main_boot_entry(void)
     data_dispatcher_register_default(hci->event_dispatcher, btu_hci_msg_queue);
     hci->set_data_queue(btu_hci_msg_queue);
 
+#ifdef BLUETOOTH_RTK
+    bte_load_rtkbt_conf(BTE_RTK_CONF_FILE);
+#endif
+#if (defined(BLE_INCLUDED) && (BLE_INCLUDED == TRUE))
+    bte_load_ble_conf(BTE_BLE_STACK_CONF_FILE);
+#endif
     module_init(get_module(STACK_CONFIG_MODULE));
 }
 

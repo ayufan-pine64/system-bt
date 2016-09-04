@@ -111,4 +111,3 @@ static const interop_name_entry_t interop_name_database[] = {
   // Subaru car kits ("CAR M_MEDIA")
   {"CAR",     3, INTEROP_DISABLE_AUTO_PAIRING},
 };
-

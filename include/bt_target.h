@@ -357,7 +357,11 @@
 
 /* The default scan mode */
 #ifndef BTM_DEFAULT_SCAN_TYPE
+#ifdef BLUETOOTH_RTK
+#define BTM_DEFAULT_SCAN_TYPE       BTM_SCAN_TYPE_STANDARD 
+#else
 #define BTM_DEFAULT_SCAN_TYPE       BTM_SCAN_TYPE_INTERLACED
+#endif
 #endif
 
 /* Should connections to unknown devices be allowed when not discoverable? */
@@ -598,7 +602,11 @@
 
 /* Minimum number of ACL credit for high priority link */
 #ifndef L2CAP_HIGH_PRI_MIN_XMIT_QUOTA
+#ifdef BLUETOOTH_RTK_COEX
+#define L2CAP_HIGH_PRI_MIN_XMIT_QUOTA       8
+#else
 #define L2CAP_HIGH_PRI_MIN_XMIT_QUOTA       5
+#endif
 #endif
 
 /* used for monitoring HCI ACL credit management */
@@ -1506,7 +1514,11 @@ The maximum number of payload octets that the local device can receive in a sing
 ******************************************************************************/
 
 #ifndef HCILP_INCLUDED
+#ifdef BLUETOOTH_RTK
+#define HCILP_INCLUDED                  FALSE
+#else
 #define HCILP_INCLUDED                  TRUE
+#endif
 #endif
 
 /******************************************************************************

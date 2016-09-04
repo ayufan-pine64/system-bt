@@ -30,7 +30,9 @@
 #include "osi/include/reactor.h"
 #include "osi/include/thread.h"
 #include "vendor.h"
-
+#ifdef BLUETOOTH_RTK
+#include "hci_layer.h"
+#endif
 #define HCI_HAL_SERIAL_BUFFER_SIZE 1026
 #define HCI_BLE_EVENT 0x3e
 
@@ -114,6 +116,9 @@ static void hal_close() {
 }
 
 static size_t read_data(serial_data_type_t type, uint8_t *buffer, size_t max_size) {
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (type < DATA_TYPE_ACL || type > DATA_TYPE_EVENT) {
     LOG_ERROR(LOG_TAG, "%s invalid data type: %d", __func__, type);
     return 0;
@@ -124,6 +129,9 @@ static size_t read_data(serial_data_type_t type, uint8_t *buffer, size_t max_siz
     LOG_ERROR(LOG_TAG, "%s with different type than existing interpretation.", __func__);
     return 0;
   }
+#ifdef BLUETOOTH_RTK
+}
+#endif
 
   return eager_reader_read(uart_stream, buffer, max_size);
 }
@@ -140,17 +148,32 @@ static void packet_finished(serial_data_type_t type) {
 static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t length) {
   assert(data != NULL);
   assert(length > 0);
-
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (type < DATA_TYPE_COMMAND || type > DATA_TYPE_SCO) {
     LOG_ERROR(LOG_TAG, "%s invalid data type: %d", __func__, type);
     return 0;
   }
+#ifdef BLUETOOTH_RTK
+  }
+#endif
+#ifdef BLUETOOTH_RTK
+  uint8_t previous_byte = *data;
 
+  if(!bluetooth_rtk_h5_flag) {
+  // Write the signal byte right before the data
+    --data;
+    *(data) = type;
+    ++length;
+  }
+#else
   // Write the signal byte right before the data
   --data;
   uint8_t previous_byte = *data;
   *(data) = type;
   ++length;
+#endif
 
   uint16_t transmitted_length = 0;
   while (length > 0) {
@@ -172,12 +195,23 @@ static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t l
   }
 
 done:;
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+    // Be nice and restore the old value of that byte
+    *(data) = previous_byte;
+
+    // Remove the signal byte from our transmitted length, if it was actually written
+    if (transmitted_length > 0)
+      --transmitted_length;
+  }
+#else
   // Be nice and restore the old value of that byte
   *(data) = previous_byte;
 
   // Remove the signal byte from our transmitted length, if it was actually written
   if (transmitted_length > 0)
     --transmitted_length;
+#endif
 
   return transmitted_length;
 }
@@ -220,6 +254,9 @@ static bool stream_corrupted_during_le_scan_workaround(const uint8_t byte_read)
 
 // See what data is waiting, and notify the upper layer
 static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *context) {
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (stream_has_interpretation) {
     callbacks->data_ready(current_data_type);
   } else {
@@ -240,6 +277,13 @@ static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *conte
     stream_has_interpretation = true;
     current_data_type = type_byte;
   }
+#ifdef BLUETOOTH_RTK
+  }else {
+	stream_has_interpretation = true;
+	current_data_type = DATA_TYPE_H5;
+	callbacks->data_ready(current_data_type);
+  }
+#endif
 }
 
 static const hci_hal_t interface = {
