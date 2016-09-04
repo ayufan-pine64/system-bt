@@ -29,7 +29,14 @@
 
 #define LAST_VENDOR_OPCODE_VALUE VENDOR_DO_EPILOG
 
+#ifdef BLUETOOTH_RTK
+#include "bdroid_buildcfg.h"
+static const char *VENDOR_LIBRARY_NAME_USB = "libbt-vendor_usb.so";
+static const char *VENDOR_LIBRARY_NAME_UART = "libbt-vendor_uart.so";
+#else
+#endif
 static const char *VENDOR_LIBRARY_NAME = "libbt-vendor.so";
+
 static const char *VENDOR_LIBRARY_SYMBOL_NAME = "BLUETOOTH_VENDOR_LIB_INTERFACE";
 
 static const vendor_t interface;
@@ -49,11 +56,32 @@ static bool vendor_open(
   assert(lib_handle == NULL);
   hci = hci_interface;
 
-  lib_handle = dlopen(VENDOR_LIBRARY_NAME, RTLD_NOW);
-  if (!lib_handle) {
+#ifdef BLUETOOTH_RTK
+	  if(!bluetooth_rtk_h5_flag )
+	  {
+		  lib_handle = dlopen(VENDOR_LIBRARY_NAME_USB,RTLD_NOW);
+		  if (!lib_handle) {
+			  ALOGE("%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_USB,
+			  dlerror());
+			  goto error;
+		  }
+	  }
+	  else
+	  {
+		  lib_handle = dlopen(VENDOR_LIBRARY_NAME_UART,RTLD_NOW);
+		  if (!lib_handle) {
+		  ALOGE("%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_UART,
+		  dlerror());
+		  goto error;
+		  }
+	  }
+#else
+	lib_handle = dlopen(VENDOR_LIBRARY_NAME, RTLD_NOW);
+	if (!lib_handle) {
     LOG_ERROR("%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME, dlerror());
-    goto error;
-  }
+	  goto error;
+	}
+#endif
 
   lib_interface = (bt_vendor_interface_t *)dlsym(lib_handle, VENDOR_LIBRARY_SYMBOL_NAME);
   if (!lib_interface) {
@@ -62,8 +90,11 @@ static bool vendor_open(
   }
 
   LOG_INFO("alloc value %p", lib_callbacks.alloc);
-
+#ifdef BLUETOOTH_RTK
+  int status = lib_interface->init(&lib_callbacks, (unsigned char *)local_bdaddr,bt_hci_device_node);
+#else
   int status = lib_interface->init(&lib_callbacks, (unsigned char *)local_bdaddr);
+#endif
   if (status) {
     LOG_ERROR("%s unable to initialize vendor library: %d", __func__, status);
     goto error;
@@ -172,7 +203,11 @@ static void transmit_completed_callback(BT_HDR *response, void *context) {
 // Called back from vendor library when it wants to send an HCI command.
 static uint8_t transmit_cb(UNUSED_ATTR uint16_t opcode, void *buffer, tINT_CMD_CBACK callback) {
   assert(hci != NULL);
+#ifdef BLUETOOTH_RTK
+  hci->transmit_int_command(opcode, (BT_HDR *)buffer, callback);
+#else
   hci->transmit_command((BT_HDR *)buffer, transmit_completed_callback, NULL, callback);
+#endif
   return true;
 }
 

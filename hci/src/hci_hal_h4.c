@@ -27,9 +27,17 @@
 #include "osi/include/osi.h"
 #include "osi/include/log.h"
 #include "osi/include/reactor.h"
+#include "osi/include/thread.h"
 #include "vendor.h"
-
+#ifdef BLUETOOTH_RTK
+#include "hci_layer.h"
+#endif
 #define HCI_HAL_SERIAL_BUFFER_SIZE 1026
+#define HCI_BLE_EVENT 0x3e
+
+// Increased HCI thread priority to keep up with the audio sub-system
+// when streaming time sensitive data (A2DP).
+#define HCI_THREAD_PRIORITY -19
 
 // Our interface and modules we import
 static const hci_hal_t interface;
@@ -42,6 +50,8 @@ static int uart_fd;
 static eager_reader_t *uart_stream;
 static serial_data_type_t current_data_type;
 static bool stream_has_interpretation;
+static bool stream_corruption_detected;
+static uint8_t stream_corruption_bytes_to_ignore;
 
 static void event_uart_has_bytes(eager_reader_t *reader, void *context);
 
@@ -81,7 +91,13 @@ static bool hal_open() {
   }
 
   stream_has_interpretation = false;
+  stream_corruption_detected = false;
+  stream_corruption_bytes_to_ignore = 0;
   eager_reader_register(uart_stream, thread_get_reactor(thread), event_uart_has_bytes, NULL);
+
+  // Raise thread priorities to keep up with audio
+  thread_set_priority(thread, HCI_THREAD_PRIORITY);
+  thread_set_priority(eager_reader_get_read_thread(uart_stream), HCI_THREAD_PRIORITY);
 
   return true;
 
@@ -99,6 +115,9 @@ static void hal_close() {
 }
 
 static size_t read_data(serial_data_type_t type, uint8_t *buffer, size_t max_size, bool block) {
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (type < DATA_TYPE_ACL || type > DATA_TYPE_EVENT) {
     LOG_ERROR("%s invalid data type: %d", __func__, type);
     return 0;
@@ -109,7 +128,9 @@ static size_t read_data(serial_data_type_t type, uint8_t *buffer, size_t max_siz
     LOG_ERROR("%s with different type than existing interpretation.", __func__);
     return 0;
   }
-
+#ifdef BLUETOOTH_RTK
+}
+#endif
   return eager_reader_read(uart_stream, buffer, max_size, block);
 }
 
@@ -125,17 +146,32 @@ static void packet_finished(serial_data_type_t type) {
 static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t length) {
   assert(data != NULL);
   assert(length > 0);
-
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (type < DATA_TYPE_COMMAND || type > DATA_TYPE_SCO) {
     LOG_ERROR("%s invalid data type: %d", __func__, type);
     return 0;
   }
+#ifdef BLUETOOTH_RTK
+  }
+#endif
+#ifdef BLUETOOTH_RTK
+  uint8_t previous_byte = *data;
 
+  if(!bluetooth_rtk_h5_flag) {
+  // Write the signal byte right before the data
+    --data;
+    *(data) = type;
+    ++length;
+  }
+#else
   // Write the signal byte right before the data
   --data;
   uint8_t previous_byte = *data;
   *(data) = type;
   ++length;
+#endif
 
   uint16_t transmitted_length = 0;
   while (length > 0) {
@@ -156,20 +192,68 @@ static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t l
   }
 
 done:;
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+    // Be nice and restore the old value of that byte
+    *(data) = previous_byte;
+
+    // Remove the signal byte from our transmitted length, if it was actually written
+    if (transmitted_length > 0)
+      --transmitted_length;
+  }
+#else
   // Be nice and restore the old value of that byte
   *(data) = previous_byte;
 
   // Remove the signal byte from our transmitted length, if it was actually written
   if (transmitted_length > 0)
     --transmitted_length;
+#endif
 
   return transmitted_length;
 }
 
 // Internal functions
 
+// WORKAROUND:
+// As exhibited by b/23934838, during result-heavy LE scans, the UART byte
+// stream can get corrupted, leading to assertions caused by mis-interpreting
+// the bytes following the corruption.
+// This workaround looks for tell-tale signs of a BLE event and attempts to
+// skip the correct amount of bytes in the stream to re-synchronize onto
+// a packet boundary.
+// Function returns true if |byte_read| has been processed by the workaround.
+static bool stream_corrupted_during_le_scan_workaround(const uint8_t byte_read)
+{
+  if (!stream_corruption_detected && byte_read == HCI_BLE_EVENT) {
+    LOG_ERROR("%s HCI stream corrupted (message type 0x3E)!", __func__);
+    stream_corruption_detected = true;
+    return true;
+  }
+
+  if (stream_corruption_detected) {
+    if (stream_corruption_bytes_to_ignore == 0) {
+      stream_corruption_bytes_to_ignore = byte_read;
+      LOG_ERROR("%s About to skip %d bytes...", __func__, stream_corruption_bytes_to_ignore);
+    } else {
+      --stream_corruption_bytes_to_ignore;
+    }
+
+    if (stream_corruption_bytes_to_ignore == 0) {
+      LOG_ERROR("%s Back to our regularly scheduled program...", __func__);
+      stream_corruption_detected = false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
 // See what data is waiting, and notify the upper layer
 static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *context) {
+#ifdef BLUETOOTH_RTK
+  if(!bluetooth_rtk_h5_flag) {
+#endif
   if (stream_has_interpretation) {
     callbacks->data_ready(current_data_type);
   } else {
@@ -178,6 +262,10 @@ static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *conte
       LOG_ERROR("%s could not read HCI message type", __func__);
       return;
     }
+
+    if (stream_corrupted_during_le_scan_workaround(type_byte))
+      return;
+
     if (type_byte < DATA_TYPE_ACL || type_byte > DATA_TYPE_EVENT) {
       LOG_ERROR("%s Unknown HCI message type. Dropping this byte 0x%x, min %x, max %x", __func__, type_byte, DATA_TYPE_ACL, DATA_TYPE_EVENT);
       return;
@@ -186,6 +274,13 @@ static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *conte
     stream_has_interpretation = true;
     current_data_type = type_byte;
   }
+#ifdef BLUETOOTH_RTK
+  }else {
+	stream_has_interpretation = true;
+	current_data_type = DATA_TYPE_H5;
+	callbacks->data_ready(current_data_type);
+  }
+#endif
 }
 
 static const hci_hal_t interface = {

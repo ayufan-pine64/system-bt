@@ -79,6 +79,9 @@
 #include "stdio.h"
 #include <dlfcn.h>
 
+#ifdef BLUETOOTH_RTK_COEX
+#include "rtk_parse.h"
+#endif
 #if (BTA_AV_SINK_INCLUDED == TRUE)
 OI_CODEC_SBC_DECODER_CONTEXT context;
 OI_UINT32 contextData[CODEC_DATA_WORDS(2, SBC_CODEC_FAST_FILTER_BUFFERS)];
@@ -152,7 +155,11 @@ enum {
 #endif
 
 /* Middle quality quality setting @ 44.1 khz */
+#ifdef BLUETOOTH_RTK
+#define DEFAULT_SBC_BITRATE 229
+#else
 #define DEFAULT_SBC_BITRATE 328
+#endif
 
 #ifndef BTIF_A2DP_NON_EDR_MAX_RATE
 #define BTIF_A2DP_NON_EDR_MAX_RATE 229
@@ -1625,7 +1632,9 @@ static void btif_media_task_enc_init(BT_HDR *p_msg)
             btif_media_cb.encoder.s16NumOfBlocks,
             btif_media_cb.encoder.s16AllocationMethod, btif_media_cb.encoder.u16BitRate,
             btif_media_cb.encoder.s16SamplingFreq);
-
+	#ifdef BLUETOOTH_RTK_COEX
+        rtk_parse_manager_get_interface()->rtk_add_bitpool_to_fw(btif_media_cb.encoder.s16BitPool);
+    #endif
     /* Reset entirely the SBC encoder */
     SBC_Encoder_Init(&(btif_media_cb.encoder));
     APPL_TRACE_DEBUG("btif_media_task_enc_init bit pool %d", btif_media_cb.encoder.s16BitPool);
