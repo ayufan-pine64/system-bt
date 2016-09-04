@@ -336,8 +336,11 @@ typedef struct {
      * Caller will open the interface and pass in the callback routines
      * to the implemenation of this interface.
      */
+#ifdef BLUETOOTH_RTK
+    int   (*init)(const bt_vendor_callbacks_t* p_cb, unsigned char *local_bdaddr, char *bt_device_node);
+#else
     int   (*init)(const bt_vendor_callbacks_t* p_cb, unsigned char *local_bdaddr);
-
+#endif
     /**  Vendor specific operations */
     int (*op)(bt_vendor_opcode_t opcode, void *param);
 

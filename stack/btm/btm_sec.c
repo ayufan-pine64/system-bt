@@ -35,7 +35,9 @@
 #include "l2c_int.h"
 #include "bt_utils.h"
 #include "osi/include/log.h"
-
+#ifdef BLUETOOTH_RTK_COEX
+#include "rtk_parse.h"
+#endif
 #if (BT_USE_TRACES == TRUE && BT_TRACE_VERBOSE == FALSE)
 /* needed for sprintf() */
 #include <stdio.h>
@@ -4775,7 +4777,11 @@ void btm_sec_disconnected (UINT16 handle, UINT8 reason)
 
     if (!p_dev_rec)
         return;
-
+#ifdef BLUETOOTH_RTK_COEX
+    if ((p_dev_rec->device_type &= BT_DEVICE_TYPE_BLE) == 0x02){
+        rtk_parse_manager_get_interface()->rtk_delete_le_profile(p_dev_rec->bd_addr, p_dev_rec->hci_handle, p_dev_rec->profile_map);
+    }
+#endif
     transport  = (handle == p_dev_rec->hci_handle) ? BT_TRANSPORT_BR_EDR: BT_TRANSPORT_LE;
 
     p_dev_rec->rs_disc_pending = BTM_SEC_RS_NOT_PENDING;     /* reset flag */

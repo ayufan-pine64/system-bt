@@ -59,6 +59,7 @@ void uhid_set_non_blocking(int fd)
 static int uhid_write(int fd, const struct uhid_event *ev)
 {
     ssize_t ret = TEMP_FAILURE_RETRY(write(fd, ev, sizeof(*ev)));
+
     if (ret < 0){
         int rtn = -errno;
         APPL_TRACE_ERROR("%s: Cannot write to uhid:%s",
@@ -428,7 +429,7 @@ void bta_hh_co_data(UINT8 dev_handle, UINT8 *p_rpt, UINT16 len, tBTA_HH_PROTO_MO
     if ((p_dev->fd >= 0) && p_dev->ready_for_data) {
         bta_hh_co_write(p_dev->fd, p_rpt, len);
     }else {
-        APPL_TRACE_WARNING("%s: Error: fd = %d, ready %d, len = %d", __FUNCTION__, p_dev->fd, 
+        APPL_TRACE_WARNING("%s: Error: fd = %d, ready %d, len = %d", __FUNCTION__, p_dev->fd,
                             p_dev->ready_for_data, len);
     }
 }
@@ -605,4 +606,3 @@ void bta_hh_le_co_reset_rpt_cache (BD_ADDR remote_bda, UINT8 app_id)
     BTIF_TRACE_DEBUG("%s() - Reset cache for bda %s", __FUNCTION__, bdstr);
 }
 #endif /* #if (BLE_INCLUDED == TRUE && BTA_HH_LE_INCLUDED == TRUE) */
-

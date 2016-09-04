@@ -2504,7 +2504,9 @@ BOOLEAN l2cu_set_acl_priority (BD_ADDR bd_addr, UINT8 priority, BOOLEAN reset_af
         return (FALSE);
     }
 
+#ifndef BLUETOOTH_RTK_COEX
     if (BTM_IS_BRCM_CONTROLLER())
+#endif
     {
         /* Called from above L2CAP through API; send VSC if changed */
         if ((!reset_after_rs && (priority != p_lcb->acl_priority)) ||
@@ -2518,7 +2520,9 @@ BOOLEAN l2cu_set_acl_priority (BD_ADDR bd_addr, UINT8 priority, BOOLEAN reset_af
             UINT16_TO_STREAM (pp, p_lcb->handle);
             UINT8_TO_STREAM  (pp, vs_param);
 
+#ifndef BLUETOOTH_RTK_COEX
             BTM_VendorSpecificCommand (HCI_BRCM_SET_ACL_PRIORITY, HCI_BRCM_ACL_PRIORITY_PARAM_SIZE, command, NULL);
+#endif
 
             /* Adjust lmp buffer allocation for this channel if priority changed */
             if (p_lcb->acl_priority != priority)
