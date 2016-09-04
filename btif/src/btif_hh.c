@@ -53,6 +53,7 @@
 #define COD_HID_KEYBOARD        0x0540
 #define COD_HID_POINTING        0x0580
 #define COD_HID_COMBO           0x05C0
+#define COD_HID_MAJOR           0x0500
 
 #define KEYSTATE_FILEPATH "/data/misc/bluedroid/bt_hh_ks" //keep this in sync with HID host jni
 

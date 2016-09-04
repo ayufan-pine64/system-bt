@@ -75,7 +75,9 @@
 #ifndef BTE_RTK_CONF_FILE
 #define BTE_RTK_CONF_FILE "/etc/bluetooth/rtkbt.conf"
 #endif
+void bte_load_rtkbt_conf(const char *path);
 #endif
+
 /******************************************************************************
 **  Variables
 ******************************************************************************/

@@ -11,19 +11,16 @@ else
 endif
 
 ifeq ($(BOARD_HAVE_BLUETOOTH_RTK),true)
-# RealTek Bluetooth private configuration table
-bdroid_CFLAGS := -Wno-unused-parameter
-rtkbt_bdroid_C_INCLUDES += $(LOCAL_PATH)/bta/hh
-rtkbt_bdroid_C_INCLUDES += $(LOCAL_PATH)/bta/dm
-rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK
-rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK_API
+  # RealTek Bluetooth private configuration table
+  bluetooth_CFLAGS += -Wno-unused-parameter
+  bluetooth_C_INCLUDES += $(LOCAL_PATH)/bta/hh
+  bluetooth_C_INCLUDES += $(LOCAL_PATH)/bta/dm
+  bluetooth_CFLAGS += -DBLUETOOTH_RTK
+  bluetooth_CFLAGS += -DBLUETOOTH_RTK_API
 
 ifeq ($(BOARD_HAVE_BLUETOOTH_RTK_COEX),true)
-rtkbt_bdroid_CFLAGS += -DBLUETOOTH_RTK_COEX
+  bluetooth_CFLAGS += -DBLUETOOTH_RTK_COEX
 endif
-
-bdroid_C_INCLUDES += $(rtkbt_bdroid_C_INCLUDES)
-bdroid_CFLAGS += $(rtkbt_bdroid_CFLAGS)
 endif
 
 ifneq ($(BOARD_BLUETOOTH_BDROID_HCILP_INCLUDED),)
