@@ -49,24 +49,24 @@ include $(BUILD_STATIC_LIBRARY)
 
 # Bluetooth device unit tests for target
 # ========================================================
-include $(CLEAR_VARS)
-
-LOCAL_C_INCLUDES := \
-    $(LOCAL_PATH)/.. \
-    $(bluetooth_C_INCLUDES)
-
-LOCAL_SRC_FILES := \
-    ../osi/test/AllocationTestHarness.cpp \
-    ./test/interop_test.cpp \
-    ./test/classic/peer_test.cpp
-
-LOCAL_MODULE := net_test_device
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := liblog libdl
-LOCAL_STATIC_LIBRARIES := libbtdevice libbtcore libosi libcutils
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_NATIVE_TEST)
+# include $(CLEAR_VARS)
+#
+# LOCAL_C_INCLUDES := \
+#     $(LOCAL_PATH)/.. \
+#     $(bluetooth_C_INCLUDES)
+#
+# LOCAL_SRC_FILES := \
+#     ../osi/test/AllocationTestHarness.cpp \
+#     ./test/interop_test.cpp \
+#     ./test/classic/peer_test.cpp
+#
+# LOCAL_MODULE := net_test_device
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := liblog libdl
+# LOCAL_STATIC_LIBRARIES := libbtdevice libbtcore libosi libcutils
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_NATIVE_TEST)

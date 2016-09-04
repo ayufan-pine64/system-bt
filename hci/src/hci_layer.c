@@ -115,7 +115,8 @@ static const btsnoop_t *btsnoop;
 static const hci_hal_t *hal;
 
 #ifdef BLUETOOTH_RTK
-static const tHCI_IF *hci_h5;
+const tHCI_IF hci_h5_func_table;
+static const tHCI_IF *hci_h5 = &hci_h5_func_table;
 char bt_hci_device_node[BT_HCI_DEVICE_NODE_MAX_LEN] = {0};
 bool bluetooth_rtk_h5_flag = FALSE;//Default Usb H4 Interfcace ,if ture Uart H5 Interface
 extern const hci_hal_t *hci_get_h5_interface();
@@ -526,7 +527,7 @@ static void event_command_ready(fixed_queue_t *queue, UNUSED_ATTR void *context)
     low_power_manager->wake_assert();
 #ifdef BLUETOOTH_RTK
   if(bluetooth_rtk_h5_flag)
-	hci_h5->send(wait_entry->command);
+	 hci_h5->send(wait_entry->command);
   else
    	packet_fragmenter->fragment_and_dispatch(wait_entry->command);
 #else
@@ -620,12 +621,12 @@ static void hal_says_data_ready(serial_data_type_t type) {
   uint8_t byte;
 #ifdef BLUETOOTH_RTK
   if(bluetooth_rtk_h5_flag){
-	  while(hal->read_data(type, &byte, 1, false) != 0) {
+	  while(hal->read_data(type, &byte, 1) != 0) {
   	  hci_h5->rcv(&byte);
   	  }
    } else {
 #endif
-  while (hal->read_data(type, &byte, 1, false) != 0) {
+  while (hal->read_data(type, &byte, 1) != 0) {
     switch (incoming->state) {
       case BRAND_NEW:
         // Initialize and prepare to jump to the preamble reading state
@@ -778,7 +779,7 @@ static bool filter_incoming_event(BT_HDR *packet) {
   }
 
   return false;
-  
+
 intercepted:
 #ifdef BLUETOOTH_RTK
   if(!bluetooth_rtk_h5_flag)
@@ -944,9 +945,6 @@ const hci_t *hci_layer_get_interface() {
   packet_fragmenter = packet_fragmenter_get_interface();
   vendor = vendor_get_interface();
   low_power_manager = low_power_manager_get_interface();
-#ifdef BLUETOOTH_RTK
-  hci_h5 =  hci_get_h5_interface();
-#endif
 #ifdef BLUETOOTH_RTK_COEX
   rtk_parse_manager = rtk_parse_manager_get_interface();
 #endif

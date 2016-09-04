@@ -337,7 +337,6 @@ static struct patch_struct rtk_patch;
 **  Externs
 ******************************************************************************/
 
-extern BUFFER_Q tx_q;
 extern void rtk_parse_internal_event_intercept(uint8_t *p_msg);
 extern void rtk_parse_l2cap_data(uint8_t *pp, uint8_t direction);
 extern void rtk_parse_command(uint8_t *pp);

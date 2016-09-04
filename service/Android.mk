@@ -141,62 +141,62 @@ LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
 
 include $(BUILD_EXECUTABLE)
 
-# Native system service unit tests for host
-# ========================================================
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := \
-	$(btserviceBaseTestSrc) \
-	$(btserviceCommonSrc) \
-	$(btserviceDaemonSrc) \
-	test/main.cpp \
-	test/stub_ipc_handler_binder.cpp
-ifeq ($(HOST_OS),linux)
-LOCAL_SRC_FILES += \
-	$(btserviceLinuxSrc) \
-	test/ipc_linux_unittest.cpp
-LOCAL_LDLIBS += -lrt
-else
-LOCAL_SRC_FILES += \
-	test/stub_ipc_handler_linux.cpp
-endif
-LOCAL_C_INCLUDES += $(btserviceCommonIncludes)
-LOCAL_MODULE_TAGS := debug tests
-LOCAL_MODULE := bluetoothtbd-host_test
-LOCAL_SHARED_LIBRARIES += libchrome
-LOCAL_STATIC_LIBRARIES += libgmock_host libgtest_host liblog
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS) $(btservice_orig_HOST_NDEBUG)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_HOST_NATIVE_TEST)
+# # Native system service unit tests for host
+# # ========================================================
+# include $(CLEAR_VARS)
+# LOCAL_SRC_FILES := \
+# 	$(btserviceBaseTestSrc) \
+# 	$(btserviceCommonSrc) \
+# 	$(btserviceDaemonSrc) \
+# 	test/main.cpp \
+# 	test/stub_ipc_handler_binder.cpp
+# ifeq ($(HOST_OS),linux)
+# LOCAL_SRC_FILES += \
+# 	$(btserviceLinuxSrc) \
+# 	test/ipc_linux_unittest.cpp
+# LOCAL_LDLIBS += -lrt
+# else
+# LOCAL_SRC_FILES += \
+# 	test/stub_ipc_handler_linux.cpp
+# endif
+# LOCAL_C_INCLUDES += $(btserviceCommonIncludes)
+# LOCAL_MODULE_TAGS := debug tests
+# LOCAL_MODULE := bluetoothtbd-host_test
+# LOCAL_SHARED_LIBRARIES += libchrome
+# LOCAL_STATIC_LIBRARIES += libgmock_host libgtest_host liblog
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS) $(btservice_orig_HOST_NDEBUG)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_HOST_NATIVE_TEST)
 
 # Native system service unit tests for target.
 # This includes Binder related tests that can only be run
 # on target.
 # ========================================================
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := \
-	$(btserviceBaseTestSrc) \
-	$(btserviceBinderDaemonSrc) \
-	$(btserviceCommonSrc) \
-	$(btserviceDaemonSrc) \
-	test/main.cpp \
-	test/parcel_helpers_unittest.cpp
-LOCAL_C_INCLUDES += $(btserviceCommonIncludes)
-LOCAL_MODULE_TAGS := debug tests
-LOCAL_MODULE := bluetoothtbd_test
-LOCAL_SHARED_LIBRARIES += \
-	libbinder \
-	libchrome \
-	libutils
-LOCAL_STATIC_LIBRARIES += libgmock libgtest liblog
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS) $(btservice_orig_TARGET_NDEBUG)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_NATIVE_TEST)
+# include $(CLEAR_VARS)
+# LOCAL_SRC_FILES := \
+# 	$(btserviceBaseTestSrc) \
+# 	$(btserviceBinderDaemonSrc) \
+# 	$(btserviceCommonSrc) \
+# 	$(btserviceDaemonSrc) \
+# 	test/main.cpp \
+# 	test/parcel_helpers_unittest.cpp
+# LOCAL_C_INCLUDES += $(btserviceCommonIncludes)
+# LOCAL_MODULE_TAGS := debug tests
+# LOCAL_MODULE := bluetoothtbd_test
+# LOCAL_SHARED_LIBRARIES += \
+# 	libbinder \
+# 	libchrome \
+# 	libutils
+# LOCAL_STATIC_LIBRARIES += libgmock libgtest liblog
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS) $(btservice_orig_TARGET_NDEBUG)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_NATIVE_TEST)
 
 # Client library for interacting with Bluetooth daemon
 # This is a static library for target.

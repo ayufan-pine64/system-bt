@@ -33,7 +33,8 @@ ifeq ($(BOARD_HAVE_BLUETOOTH_RTK_COEX),true)
 LOCAL_SRC_FILES += \
     src/rtk_parse.c
 endif
-LOCAL_CFLAGS += -std=c99 $(bdroid_CFLAGS) -Wno-unused-variable
+LOCAL_CFLAGS += -std=c99 $(bdroid_CFLAGS)
+bluetooth_CFLAGS += -Wno-unused-variable -Wno-unused-value
 
 LOCAL_C_INCLUDES += \
     $(LOCAL_PATH)/include \
@@ -58,36 +59,36 @@ include $(BUILD_STATIC_LIBRARY)
 
 # HCI unit tests for target
 # ========================================================
-ifeq (,$(strip $(SANITIZE_TARGET)))
-include $(CLEAR_VARS)
-
-LOCAL_C_INCLUDES := \
-    $(LOCAL_PATH)/include \
-    $(LOCAL_PATH)/.. \
-    $(LOCAL_PATH)/../include \
-    $(LOCAL_PATH)/../btcore/include \
-    $(LOCAL_PATH)/../osi/test \
-    $(LOCAL_PATH)/../stack/include \
-    $(LOCAL_PATH)/../utils/include \
-    $(bluetooth_C_INCLUDES)
-
-LOCAL_SRC_FILES := \
-    ../osi/test/AllocationTestHarness.cpp \
-    ../osi/test/AlarmTestHarness.cpp \
-    ./test/hci_hal_h4_test.cpp \
-    ./test/hci_hal_mct_test.cpp \
-    ./test/hci_layer_test.cpp \
-    ./test/low_power_manager_test.cpp \
-    ./test/packet_fragmenter_test.cpp
-
-LOCAL_MODULE := net_test_hci
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := liblog libdl libprotobuf-cpp-full
-LOCAL_STATIC_LIBRARIES := libbt-hci libosi libcutils libbtcore libbt-protos
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_NATIVE_TEST)
-endif # SANITIZE_TARGET
+# ifeq (,$(strip $(SANITIZE_TARGET)))
+# include $(CLEAR_VARS)
+#
+# LOCAL_C_INCLUDES := \
+#     $(LOCAL_PATH)/include \
+#     $(LOCAL_PATH)/.. \
+#     $(LOCAL_PATH)/../include \
+#     $(LOCAL_PATH)/../btcore/include \
+#     $(LOCAL_PATH)/../osi/test \
+#     $(LOCAL_PATH)/../stack/include \
+#     $(LOCAL_PATH)/../utils/include \
+#     $(bluetooth_C_INCLUDES)
+#
+# LOCAL_SRC_FILES := \
+#     ../osi/test/AllocationTestHarness.cpp \
+#     ../osi/test/AlarmTestHarness.cpp \
+#     ./test/hci_hal_h4_test.cpp \
+#     ./test/hci_hal_mct_test.cpp \
+#     ./test/hci_layer_test.cpp \
+#     ./test/low_power_manager_test.cpp \
+#     ./test/packet_fragmenter_test.cpp
+#
+# LOCAL_MODULE := net_test_hci
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := liblog libdl libprotobuf-cpp-full
+# LOCAL_STATIC_LIBRARIES := libbt-hci libosi libcutils libbtcore libbt-protos
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_NATIVE_TEST)
+# endif # SANITIZE_TARGET

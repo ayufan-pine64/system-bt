@@ -82,34 +82,34 @@ endif
 
 # libbtcore unit tests for target
 # ========================================================
-include $(CLEAR_VARS)
-LOCAL_C_INCLUDES := $(btcoreCommonIncludes)
-LOCAL_SRC_FILES := $(btcoreCommonTestSrc)
-LOCAL_MODULE := net_test_btcore
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := liblog
-LOCAL_STATIC_LIBRARIES := libbtcore libosi
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_NATIVE_TEST)
+# include $(CLEAR_VARS)
+# LOCAL_C_INCLUDES := $(btcoreCommonIncludes)
+# LOCAL_SRC_FILES := $(btcoreCommonTestSrc)
+# LOCAL_MODULE := net_test_btcore
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := liblog
+# LOCAL_STATIC_LIBRARIES := libbtcore libosi
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_NATIVE_TEST)
 
 # libbtcore unit tests for host
 # ========================================================
-ifeq ($(HOST_OS),linux)
-include $(CLEAR_VARS)
-LOCAL_C_INCLUDES := $(btcoreCommonIncludes)
-LOCAL_SRC_FILES := $(btcoreCommonTestSrc)
-LOCAL_MODULE := net_test_btcore
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := liblog
-LOCAL_STATIC_LIBRARIES := libbtcore-host libosi-host
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_HOST_NATIVE_TEST)
-endif
+# ifeq ($(HOST_OS),linux)
+# include $(CLEAR_VARS)
+# LOCAL_C_INCLUDES := $(btcoreCommonIncludes)
+# LOCAL_SRC_FILES := $(btcoreCommonTestSrc)
+# LOCAL_MODULE := net_test_btcore
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := liblog
+# LOCAL_STATIC_LIBRARIES := libbtcore-host libosi-host
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_HOST_NATIVE_TEST)
+# endif
