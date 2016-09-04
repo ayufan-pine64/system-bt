@@ -33,7 +33,7 @@ ifeq ($(BOARD_HAVE_BLUETOOTH_RTK_COEX),true)
 LOCAL_SRC_FILES += \
     src/rtk_parse.c
 endif
-LOCAL_CFLAGS += -std=c99 $(bdroid_CFLAGS)
+LOCAL_CFLAGS += -std=c99 $(bdroid_CFLAGS) -Wno-unused-variable
 
 LOCAL_C_INCLUDES += \
     $(LOCAL_PATH)/include \

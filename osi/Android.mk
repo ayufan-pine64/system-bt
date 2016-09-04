@@ -160,35 +160,35 @@ endif
 #
 # libosi unit tests for target
 # ========================================================
-include $(CLEAR_VARS)
-LOCAL_C_INCLUDES := $(btosiCommonIncludes)
-LOCAL_SRC_FILES := $(btosiCommonTestSrc)
-LOCAL_MODULE := net_test_osi
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := libc liblog libprotobuf-cpp-full libchrome libcutils
-LOCAL_STATIC_LIBRARIES := libosi libbt-protos
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS)
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_NATIVE_TEST)
+# include $(CLEAR_VARS)
+# LOCAL_C_INCLUDES := $(btosiCommonIncludes)
+# LOCAL_SRC_FILES := $(btosiCommonTestSrc)
+# LOCAL_MODULE := net_test_osi
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := libc liblog libprotobuf-cpp-full libchrome libcutils
+# LOCAL_STATIC_LIBRARIES := libosi libbt-protos
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS)
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_NATIVE_TEST)
 
 # libosi unit tests for host
 # ========================================================
-ifeq ($(HOST_OS),linux)
-include $(CLEAR_VARS)
-LOCAL_C_INCLUDES := $(btosiCommonIncludes)
-LOCAL_SRC_FILES := $(btosiCommonTestSrc)
-LOCAL_LDLIBS := -lrt -lpthread
-LOCAL_MODULE := net_test_osi
-LOCAL_MODULE_TAGS := tests
-LOCAL_SHARED_LIBRARIES := liblog libprotobuf-cpp-full libchrome
-LOCAL_STATIC_LIBRARIES := libosi-host libbt-protos
-
-LOCAL_CFLAGS += $(bluetooth_CFLAGS) -DOS_GENERIC
-LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
-LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
-
-include $(BUILD_HOST_NATIVE_TEST)
-endif
+# ifeq ($(HOST_OS),linux)
+# include $(CLEAR_VARS)
+# LOCAL_C_INCLUDES := $(btosiCommonIncludes)
+# LOCAL_SRC_FILES := $(btosiCommonTestSrc)
+# LOCAL_LDLIBS := -lrt -lpthread
+# LOCAL_MODULE := net_test_osi
+# LOCAL_MODULE_TAGS := tests
+# LOCAL_SHARED_LIBRARIES := liblog libprotobuf-cpp-full libchrome
+# LOCAL_STATIC_LIBRARIES := libosi-host libbt-protos
+#
+# LOCAL_CFLAGS += $(bluetooth_CFLAGS) -DOS_GENERIC
+# LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
+# LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)
+#
+# include $(BUILD_HOST_NATIVE_TEST)
+# endif

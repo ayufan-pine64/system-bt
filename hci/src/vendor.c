@@ -196,6 +196,7 @@ static void buffer_free_cb(void *buffer) {
   buffer_allocator->free(buffer);
 }
 
+UNUSED_ATTR
 static void transmit_completed_callback(BT_HDR *response, void *context) {
   // Call back to the vendor library if it provided a callback to call.
   if (context) {

@@ -26,10 +26,6 @@
 #include "osi/include/future.h"
 #include "osi/include/osi.h"
 #include "bt_types.h"
-#include "data_dispatcher.h"
-#include "fixed_queue.h"
-#include "future.h"
-#include "osi.h"
 #ifdef BLUETOOTH_RTK
 #include "bt_hci_bdroid.h"
 #endif

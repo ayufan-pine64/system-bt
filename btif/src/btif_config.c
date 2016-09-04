@@ -146,20 +146,20 @@ static future_t *init(void) {
   config = btif_config_open(CONFIG_FILE_PATH);
   btif_config_source = ORIGINAL;
   if (!config) {
-    LOG_WARN("%s unable to load config file: %s; using backup.",
+    LOG_WARN(LOG_TAG, "%s unable to load config file: %s; using backup.",
               __func__, CONFIG_FILE_PATH);
     config = btif_config_open(CONFIG_BACKUP_PATH);
     btif_config_source = BACKUP;
     file_source = "Backup";
   }
   if (!config) {
-    LOG_WARN("%s unable to load backup; attempting to transcode legacy file.", __func__);
+    LOG_WARN(LOG_TAG, "%s unable to load backup; attempting to transcode legacy file.", __func__);
     config = btif_config_transcode(CONFIG_LEGACY_FILE_PATH);
     btif_config_source = LEGACY;
     file_source = "Legacy";
   }
   if (!config) {
-    LOG_ERROR("%s unable to transcode legacy file; creating empty config.", __func__);
+    LOG_ERROR(LOG_TAG, "%s unable to transcode legacy file; creating empty config.", __func__);
     config = config_new_empty();
     btif_config_source = NEW_FILE;
     file_source = "Empty";
@@ -169,7 +169,7 @@ static future_t *init(void) {
     config_set_string(config, INFO_SECTION, FILE_SOURCE, file_source);
 
   if (!config) {
-    LOG_ERROR("%s unable to allocate a config object.", __func__);
+    LOG_ERROR(LOG_TAG, "%s unable to allocate a config object.", __func__);
     goto error;
   }
 

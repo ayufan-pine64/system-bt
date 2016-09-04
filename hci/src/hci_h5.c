@@ -12,7 +12,7 @@ Major Change History:
       When             Who       What
     ---------------------------------------------------------------
 	2015-12-15      lamparten   modified
-	
+
 Notes:
        This is designed for UART H5 HCI Interface in Android 6.0.
 *****************************************************************************/
@@ -27,7 +27,6 @@ Notes:
 #include "bt_hci_bdroid.h"
 #include "hci_layer.h"
 #include "userial.h"
-#include "gki.h"
 #include <termios.h>
 #include <errno.h>
 #include "bt_skbuff.h"
@@ -1818,7 +1817,7 @@ uint8_t internal_event_intercept_h5(void)
             H5LogMsg("CommandCompleteEvent for command (0x%04X)", opcode);
             if (opcode == p_cb->int_cmd[p_cb->int_cmd_rd_idx].opcode)
             {
-				//ONLY HANDLE H5 INIT CMD COMMAND COMPLETE EVT 
+				//ONLY HANDLE H5 INIT CMD COMMAND COMPLETE EVT
             	h5_int_command = 1;
 				H5LogMsg("CommandCompleteEvent for command 1 (0x%04X)", opcode);
                 if(opcode == 0xFC17)
@@ -1851,19 +1850,19 @@ uint8_t internal_event_intercept_h5(void)
 			hci_layer_callbacks->filter_incoming_event(p_cb->p_rcv_msg);
     }
 #endif
-#if 0	
+#if 0
     if (event_code == HCI_COMMAND_COMPLETE_EVT)
     {
     	internal_command = 1;
         num_hci_cmd_pkts = *p++;
         STREAM_TO_UINT16(opcode, p);
 		H5LogMsg("event_code(0x%x)  opcode (0x%x) p_cb->int_cmd_rsp_pending %d", event_code,opcode,p_cb->int_cmd_rsp_pending);
-//1. Hanle  H5 INIT CMD COMMAND COMPLETE EVT 2 . Others 
+//1. Hanle  H5 INIT CMD COMMAND COMPLETE EVT 2 . Others
 		if (p_cb->int_cmd_rsp_pending > 0) {
       		H5LogMsg("CommandCompleteEvent for command (0x%04X) p_cb->int_cmd[p_cb->int_cmd_rd_idx].opcode (0x%04X)", opcode ,p_cb->int_cmd[p_cb->int_cmd_rd_idx].opcode);
       		if (opcode == p_cb->int_cmd[p_cb->int_cmd_rd_idx].opcode) {
-				//ONLY HANDLE H5 INIT CMD COMMAND COMPLETE EVT 
-				h5_int_command = 1; 
+				//ONLY HANDLE H5 INIT CMD COMMAND COMPLETE EVT
+				h5_int_command = 1;
                 if(opcode == 0xFC17)
                 {
                     //need to set a timer, add wait for retransfer packet from controller.
@@ -1938,7 +1937,7 @@ uint8_t internal_event_intercept_h5(void)
 		//Cmd comp event and status event callback
 		if(h5_int_command == 0)
 	    	hci_layer_callbacks->filter_incoming_event(p_cb->p_rcv_msg);
-    }	
+    }
 #endif
     else if (event_code == HCI_COMMAND_STATUS_EVT)
     {
@@ -2168,7 +2167,7 @@ static void hci_recv_frame(sk_buff *skb, uint8_t pkt_type)
     //we only intercept evt packet here
     if(pkt_type == HCI_EVENT_PKT)
     {
- 
+
         intercepted = internal_event_intercept_h5();
     }
 
@@ -2224,7 +2223,7 @@ uint8_t hci_rx_dispatch_by_handle(sk_buff* rx_skb)
 		p_rcv_msg->event = MSG_HC_TO_STACK_HCI_ACL;
 		p_rcv_msg->len = rx_skb_data_len;
 		memcpy((uint8_t *)(p_rcv_msg + 1), rx_skb_data, rx_skb_data_len);
-//use the hci_layer interface 
+//use the hci_layer interface
 		btsnoop->capture(p_rcv_msg, TRUE);
 		buffer_allocator->free(p_rcv_msg);
 	}
@@ -2416,11 +2415,11 @@ static void h5_complete_rx_pkt(tHCI_H5_CB *h5)
             sk_buff * skb_complete_pkt = h5->rx_skb;
 
             /* Allocate a buffer for message */
- 
+
             len = BT_HC_HDR_SIZE + skb_get_data_length(skb_complete_pkt);
             h5->p_rcv_msg = (HC_BT_HDR *) buffer_allocator->alloc(len);
 
-			
+
             if (h5->p_rcv_msg)
             {
                 /* Initialize buffer with received h5 data */
@@ -2889,7 +2888,7 @@ void hci_h5_init(const packet_fragmenter_callbacks_t *result_callbacks,const all
 
   	hal = hci_hal_get_interface();
   	btsnoop = btsnoop_get_interface();
-	
+
 }
 
 /*******************************************************************************
@@ -2910,7 +2909,7 @@ void hci_h5_cleanup(void)
     rtk_h5.cleanuping = 1;
 
 
-	
+
     //btsnoop_cleanup();
 
     h5_free_data_retrans_timer();
@@ -3102,7 +3101,7 @@ void hci_h5_send_msg(HC_BT_HDR *p_msg)
 
                     if (hci_layer_callbacks)
                     {
-//For Acl sent partially , enqueue the  first acl_pkt_size to h5_enqueue, callback the rest of the Acl data to upstack to resend it 
+//For Acl sent partially , enqueue the  first acl_pkt_size to h5_enqueue, callback the rest of the Acl data to upstack to resend it
         				hci_layer_callbacks->transmit_finished(p_msg, false);
 //                        bt_hc_cbacks->tx_result((TRANSAC) p_msg, \
 //                                                    (char *) (p_msg + 1), \
@@ -3179,14 +3178,14 @@ void hci_h5_send_msg(HC_BT_HDR *p_msg)
 
 	 H5LogMsg("p_msg->layer_specific 0x%04X, lay_spec:0x%04X",p_msg->layer_specific,lay_spec);
         if ((event == MSG_STACK_TO_HC_HCI_CMD)) {
-//For int_cm as H5 INIT cmd and Coex cmd ... just free it, while hold the other CMD 
+//For int_cm as H5 INIT cmd and Coex cmd ... just free it, while hold the other CMD
 			if((rtk_h5.int_cmd_rsp_pending > 0) && (p_msg->layer_specific == lay_spec)){
 			H5LogMsg("For int_cm as H5 INIT cmd and Coex cmd ... just free it lay_spec:0x%04X");
             /* dealloc buffer of internal command */
 			buffer_allocator->free(p_msg);
         	}
         }else {
-//For Acl sent complete, just free it 
+//For Acl sent complete, just free it
 			buffer_allocator->free(p_msg);
         }
 
@@ -3697,8 +3696,6 @@ const tHCI_IF hci_h5_func_table =
     hci_h5_receive_msg
 };
 
-const hci_hal_t *hci_get_h5_interface() {  
+const hci_hal_t *hci_get_h5_interface() {
   return &hci_h5_func_table;
 }
-
-

@@ -27,11 +27,7 @@
 #define HCI_PROTO_VERSION_4_0 0x06      /* Version for BT spec 4.0          */
 #define HCI_PROTO_VERSION_4_1 0x07      /* Version for BT spec 4.1          */
 #define HCI_PROTO_VERSION_4_2 0x08      /* Version for BT spec 4.2          */
-<<<<<<< HEAD
-
-=======
 #define HCI_PROTO_REVISION    0x000C    /* Current implementation version   */
->>>>>>> aosp6/marshmallow
 /*
 **  Definitions for HCI groups
 */
@@ -2610,4 +2606,3 @@ typedef struct
 #define HCI_LE_RC_CONN_PARAM_UPD_NEG_RPY_SUPPORTED(x)      ((x)[HCI_SUPP_COMMANDS_LE_RC_CONN_PARAM_UPD_NEG_RPY_OFF] & HCI_SUPP_COMMANDS_RLE_RC_CONN_PARAM_UPD_NEG_RPY_MASK)
 
 #endif
-

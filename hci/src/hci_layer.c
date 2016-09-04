@@ -258,11 +258,11 @@ static future_t *start_up(void) {
 /*we add BLUETOOTH_RTK_H5 Flag Here*/
   if(!strcmp(bt_hci_device_node,"/dev/rtk_btusb")){
   	bluetooth_rtk_h5_flag = FALSE;
-	LOG_INFO("%s bluetooth_rtk_h5_flag :%d", __func__,bluetooth_rtk_h5_flag);
+	LOG_INFO(LOG_TAG, "%s bluetooth_rtk_h5_flag :%d", __func__,bluetooth_rtk_h5_flag);
   }else {
 	bluetooth_rtk_h5_flag = TRUE;
   }
-  LOG_INFO("%s bluetooth_rtk_h5_flag :%d bt_hci_device_node:%s", __func__,bluetooth_rtk_h5_flag,bt_hci_device_node);
+  LOG_INFO(LOG_TAG, "%s bluetooth_rtk_h5_flag :%d bt_hci_device_node:%s", __func__,bluetooth_rtk_h5_flag,bt_hci_device_node);
   if(bluetooth_rtk_h5_flag)
   	hci_h5->init(&packet_fragmenter_callbacks,buffer_allocator);
 #endif
@@ -387,7 +387,7 @@ static void set_data_queue(fixed_queue_t *queue) {
 }
 #ifdef BLUETOOTH_RTK
 static void transmit_int_command(uint16_t opcode, void *buffer,tINT_CMD_CBACK callback) {
-	LOG_ERROR("%s hci_h5->send_int_cmd.", __func__);
+	LOG_ERROR(LOG_TAG, "%s hci_h5->send_int_cmd.", __func__);
     hci_h5->send_int_cmd(opcode, buffer, callback);
 }
 #endif
