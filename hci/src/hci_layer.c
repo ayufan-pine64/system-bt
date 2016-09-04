@@ -119,7 +119,6 @@ const tHCI_IF hci_h5_func_table;
 static const tHCI_IF *hci_h5 = &hci_h5_func_table;
 char bt_hci_device_node[BT_HCI_DEVICE_NODE_MAX_LEN] = {0};
 bool bluetooth_rtk_h5_flag = FALSE;//Default Usb H4 Interfcace ,if ture Uart H5 Interface
-extern const hci_hal_t *hci_get_h5_interface();
 #endif
 static const hci_hal_callbacks_t hal_callbacks;
 static const hci_inject_t *hci_inject;

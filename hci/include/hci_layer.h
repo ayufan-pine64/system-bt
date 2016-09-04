@@ -113,7 +113,7 @@ typedef void (*tHCI_CLEANUP)(void);
 typedef void (*tHCI_SEND)(BT_HDR *p_msg);
 
 /* Handler for HCI upstream path */
-typedef uint16_t (*tHCI_RCV)(uint8_t *byte);
+typedef void (*tHCI_RCV)(uint8_t *byte);
 
 
 

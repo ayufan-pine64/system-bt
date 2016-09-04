@@ -85,16 +85,9 @@ typedef enum {
 **  Type definitions and return values
 ******************************************************************************/
 
-typedef struct
-{
-    uint16_t          event;
-    uint16_t          len;
-    uint16_t          offset;
-    uint16_t          layer_specific;
-    uint8_t           data[];
-} HC_BT_HDR;
+typedef struct BT_HDR HC_BT_HDR;
 
-#define BT_HC_HDR_SIZE (sizeof(HC_BT_HDR))
+#define BT_HC_HDR_SIZE BT_HDR_SIZE
 
 typedef struct _hc_buffer_hdr
 {
