@@ -24,6 +24,7 @@ Notes:
 #include <utils/Log.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <bt_types.h>
 #include "bt_hci_bdroid.h"
 #include "hci_layer.h"
 #include "userial.h"

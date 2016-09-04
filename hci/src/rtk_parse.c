@@ -41,6 +41,7 @@ Notes:
 #include <dirent.h>
 #include <signal.h>
 #include <poll.h>
+#include <bt_types.h>
 
 #include "bt_list.h"
 #include "bt_hci_bdroid.h"

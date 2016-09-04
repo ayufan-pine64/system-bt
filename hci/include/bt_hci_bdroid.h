@@ -85,8 +85,7 @@ typedef enum {
 **  Type definitions and return values
 ******************************************************************************/
 
-typedef struct BT_HDR HC_BT_HDR;
-
+#define HC_BT_HDR BT_HDR
 #define BT_HC_HDR_SIZE BT_HDR_SIZE
 
 typedef struct _hc_buffer_hdr
