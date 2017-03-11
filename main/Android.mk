@@ -97,7 +97,6 @@ LOCAL_LDLIBS := -Wl,-Bsymbolic,-Bsymbolic-functions
 
 ifeq ($(BOARD_HAVE_BLUETOOTH_RTK),true)
 LOCAL_REQUIRED_MODULES := \
-    auto_pair_devlist.conf \
     bt_did.conf \
     bt_stack.conf \
     libbt-hci \
@@ -105,12 +104,12 @@ LOCAL_REQUIRED_MODULES := \
     libbt-vendor_usb
 else
 LOCAL_REQUIRED_MODULES := \
+    auto_pair_devlist.conf \
     bt_did.conf \
     bt_stack.conf \
     libbt-hci \
     libbt-vendor
 endif
-
 LOCAL_CFLAGS += $(bluetooth_CFLAGS) -DBUILDCFG
 LOCAL_CONLYFLAGS += $(bluetooth_CONLYFLAGS)
 LOCAL_CPPFLAGS += $(bluetooth_CPPFLAGS)

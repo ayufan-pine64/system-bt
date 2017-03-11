@@ -132,7 +132,6 @@ static size_t read_data(serial_data_type_t type, uint8_t *buffer, size_t max_siz
 #ifdef BLUETOOTH_RTK
 }
 #endif
-
   return eager_reader_read(uart_stream, buffer, max_size);
 }
 
@@ -168,7 +167,6 @@ static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t l
     ++length;
   }
 #else
-  // Write the signal byte right before the data
   --data;
   uint8_t previous_byte = *data;
   *(data) = type;
@@ -197,10 +195,7 @@ static uint16_t transmit_data(serial_data_type_t type, uint8_t *data, uint16_t l
 done:;
 #ifdef BLUETOOTH_RTK
   if(!bluetooth_rtk_h5_flag) {
-    // Be nice and restore the old value of that byte
     *(data) = previous_byte;
-
-    // Remove the signal byte from our transmitted length, if it was actually written
     if (transmitted_length > 0)
       --transmitted_length;
   }

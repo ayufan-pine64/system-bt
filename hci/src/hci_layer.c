@@ -113,12 +113,11 @@ static hci_t interface;
 static const allocator_t *buffer_allocator;
 static const btsnoop_t *btsnoop;
 static const hci_hal_t *hal;
-
 #ifdef BLUETOOTH_RTK
-const tHCI_IF hci_h5_func_table;
-static const tHCI_IF *hci_h5 = &hci_h5_func_table;
+static const tHCI_IF *hci_h5;
 char bt_hci_device_node[BT_HCI_DEVICE_NODE_MAX_LEN] = {0};
 bool bluetooth_rtk_h5_flag = FALSE;//Default Usb H4 Interfcace ,if ture Uart H5 Interface
+extern const hci_hal_t *hci_get_h5_interface();
 #endif
 static const hci_hal_callbacks_t hal_callbacks;
 static const hci_inject_t *hci_inject;
@@ -258,11 +257,11 @@ static future_t *start_up(void) {
 /*we add BLUETOOTH_RTK_H5 Flag Here*/
   if(!strcmp(bt_hci_device_node,"/dev/rtk_btusb")){
   	bluetooth_rtk_h5_flag = FALSE;
-	LOG_INFO(LOG_TAG, "%s bluetooth_rtk_h5_flag :%d", __func__,bluetooth_rtk_h5_flag);
+	LOG_INFO("%s bluetooth_rtk_h5_flag :%d", __func__,bluetooth_rtk_h5_flag);
   }else {
 	bluetooth_rtk_h5_flag = TRUE;
   }
-  LOG_INFO(LOG_TAG, "%s bluetooth_rtk_h5_flag :%d bt_hci_device_node:%s", __func__,bluetooth_rtk_h5_flag,bt_hci_device_node);
+  LOG_INFO("%s bluetooth_rtk_h5_flag :%d bt_hci_device_node:%s", __func__,bluetooth_rtk_h5_flag,bt_hci_device_node);
   if(bluetooth_rtk_h5_flag)
   	hci_h5->init(&packet_fragmenter_callbacks,buffer_allocator);
 #endif
@@ -387,7 +386,7 @@ static void set_data_queue(fixed_queue_t *queue) {
 }
 #ifdef BLUETOOTH_RTK
 static void transmit_int_command(uint16_t opcode, void *buffer,tINT_CMD_CBACK callback) {
-	LOG_ERROR(LOG_TAG, "%s hci_h5->send_int_cmd.", __func__);
+	LOG_ERROR("%s hci_h5->send_int_cmd.", __func__);
     hci_h5->send_int_cmd(opcode, buffer, callback);
 }
 #endif
@@ -526,20 +525,19 @@ static void event_command_ready(fixed_queue_t *queue, UNUSED_ATTR void *context)
     low_power_manager->wake_assert();
 #ifdef BLUETOOTH_RTK
   if(bluetooth_rtk_h5_flag)
-	 hci_h5->send(wait_entry->command);
+	hci_h5->send(wait_entry->command);
   else
-   	packet_fragmenter->fragment_and_dispatch(wait_entry->command);
+    packet_fragmenter->fragment_and_dispatch(wait_entry->command);
 #else
   packet_fragmenter->fragment_and_dispatch(wait_entry->command);
 #endif
-  low_power_manager->transmit_done();
-
+    low_power_manager->transmit_done();
 #ifdef BLUETOOTH_RTK
   if(!bluetooth_rtk_h5_flag){
-      update_command_response_timer();
+    update_command_response_timer();
   }
 #else
-  update_command_response_timer();
+	update_command_response_timer();
 #endif
   }
 }
@@ -571,7 +569,6 @@ static void transmit_fragment(BT_HDR *packet, bool send_transmit_finished) {
   if (event == MSG_STACK_TO_HC_HCI_CMD)
 		rtk_parse_manager->rtk_parse_command(pp);
 #endif
-
 
   btsnoop->capture(packet, false);
   hal->transmit_data(type, packet->data + packet->offset, packet->len);
@@ -622,8 +619,8 @@ static void hal_says_data_ready(serial_data_type_t type) {
   if(bluetooth_rtk_h5_flag){
 	  while(hal->read_data(type, &byte, 1) != 0) {
   	  hci_h5->rcv(&byte);
-  	  }
-   } else {
+  	  } 
+   } else {   
 #endif
   while (hal->read_data(type, &byte, 1) != 0) {
     switch (incoming->state) {
@@ -744,6 +741,10 @@ static bool filter_incoming_event(BT_HDR *packet) {
 
   if (event_code == HCI_COMMAND_COMPLETE_EVT) {
     STREAM_TO_UINT8(command_credits, stream);
+#ifdef BLUETOOTH_RTK
+    if(command_credits > 0)
+        command_credits = 1;
+#endif
     STREAM_TO_UINT16(opcode, stream);
 
     wait_entry = get_waiting_command(opcode);
@@ -764,6 +765,10 @@ static bool filter_incoming_event(BT_HDR *packet) {
     uint8_t status;
     STREAM_TO_UINT8(status, stream);
     STREAM_TO_UINT8(command_credits, stream);
+#ifdef BLUETOOTH_RTK
+    if(command_credits > 0)
+        command_credits = 1;
+#endif
     STREAM_TO_UINT16(opcode, stream);
 
     // If a command generates a command status event, it won't be getting a command complete event
@@ -782,17 +787,13 @@ static bool filter_incoming_event(BT_HDR *packet) {
 intercepted:
 #ifdef BLUETOOTH_RTK
   if(!bluetooth_rtk_h5_flag)
-    update_command_response_timer();
-#else
   update_command_response_timer();
+#else
+update_command_response_timer();
 #endif
   if (wait_entry) {
     // If it has a callback, it's responsible for freeing the packet
-#ifdef BLUETOOTH_RTK
-    if (event_code == HCI_COMMAND_STATUS_EVT && (!wait_entry->complete_callback && !wait_entry->complete_future))
-#else
-	if (event_code == HCI_COMMAND_STATUS_EVT || (!wait_entry->complete_callback && !wait_entry->complete_future))
-#endif
+    if (event_code == HCI_COMMAND_STATUS_EVT || (!wait_entry->complete_callback && !wait_entry->complete_future))
       buffer_allocator->free(packet);
 
     // If it has a callback, it's responsible for freeing the command
@@ -944,6 +945,9 @@ const hci_t *hci_layer_get_interface() {
   packet_fragmenter = packet_fragmenter_get_interface();
   vendor = vendor_get_interface();
   low_power_manager = low_power_manager_get_interface();
+#ifdef BLUETOOTH_RTK
+  hci_h5 =  hci_get_h5_interface();
+#endif
 #ifdef BLUETOOTH_RTK_COEX
   rtk_parse_manager = rtk_parse_manager_get_interface();
 #endif

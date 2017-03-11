@@ -37,8 +37,7 @@
 #include "btu.h"
 #include "hcimsgs.h"
 #include "l2c_int.h"
-#include "bt_utils.h"
-#include "osi/include/log.h"
+
 #ifdef BLUETOOTH_RTK_COEX
 #include "rtk_parse.h"
 #endif
@@ -6347,3 +6346,4 @@ static BOOLEAN btm_sec_is_master(tBTM_SEC_DEV_REC *p_dev_rec)
     tACL_CONN *p= btm_bda_to_acl(p_dev_rec->bd_addr, BT_TRANSPORT_BR_EDR);
     return (p && (p->link_role == BTM_ROLE_MASTER));
 }
+
