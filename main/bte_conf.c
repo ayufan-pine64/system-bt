@@ -37,9 +37,7 @@ extern unsigned int rtkbt_logfilter;
 void bte_load_rtkbt_conf(const char *path)
 {
     assert(path != NULL);
-
     ALOGI("%s attempt to load rtkbt conf from %s",__func__, path);
-
     config_t *config = config_new(path);
     if (!config) {
         ALOGI("%s file >%s< not found", __func__, path);
@@ -47,11 +45,9 @@ void bte_load_rtkbt_conf(const char *path)
     }
     memset(bt_hci_device_node, 0, sizeof(bt_hci_device_node));
     strlcpy(bt_hci_device_node, config_get_string(config, CONFIG_DEFAULT_SECTION, "BtDeviceNode","/dev/rtk_btusb"), sizeof(bt_hci_device_node));
-
     config_free(config);
 }
 #endif
-
 // Parses the specified Device ID configuration file and registers the
 // Device ID records with SDP.
 void bte_load_did_conf(const char *p_path) {
@@ -106,3 +102,4 @@ void bte_load_did_conf(const char *p_path) {
 
     config_free(config);
 }
+

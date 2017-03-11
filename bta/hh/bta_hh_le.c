@@ -2178,21 +2178,16 @@ void bta_hh_le_input_rpt_notify(tBTA_GATTC_NOTIFY *p_data)
     /* need to append report ID to the head of data */
     if (p_rpt->rpt_id != 0)
     {
-        p_buf = (UINT8 *)osi_malloc(p_data->len + 1);
-
 #ifdef BLUETOOTH_RTK_COEX
         data_type = p_rpt->rpt_id;
 		rtk_parse_manager_get_interface()->rtk_add_le_data_count(data_type);
 #endif
+        p_buf = (UINT8 *)osi_malloc(p_data->len + 1);
 
         p_buf[0] = p_rpt->rpt_id;
         memcpy(&p_buf[1], p_data->value, p_data->len);
         ++p_data->len;
     } else {
-#ifdef BLUETOOTH_RTK_COEX
-        data_type = 1;
-        rtk_parse_manager_get_interface()->rtk_add_le_data_count(data_type);
-#endif
         p_buf = p_data->value;
     }
 
@@ -2840,3 +2835,7 @@ static void bta_hh_le_register_scpp_notif_cmpl(tBTA_HH_DEV_CB *p_dev_cb, tBTA_GA
 // }
 
 #endif
+
+
+
+

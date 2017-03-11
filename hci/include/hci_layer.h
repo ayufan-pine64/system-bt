@@ -26,6 +26,7 @@
 #include "osi/include/future.h"
 #include "osi/include/osi.h"
 #include "bt_types.h"
+
 #ifdef BLUETOOTH_RTK
 #include "bt_hci_bdroid.h"
 #endif
@@ -63,7 +64,6 @@ typedef struct vendor_t vendor_t;
 typedef struct low_power_manager_t low_power_manager_t;
 
 #ifdef BLUETOOTH_RTK
-/* BD Address */
 typedef struct {
     uint8_t b[6];
 } __packed bdaddr_t;
@@ -84,9 +84,7 @@ typedef void (*command_status_cb)(uint8_t status, BT_HDR *command, void *context
 
 #ifdef BLUETOOTH_RTK
 typedef void (* p_callback)(void *p_mem);
-
 extern char bt_hci_device_node[BT_HCI_DEVICE_NODE_MAX_LEN];
-
 extern bool bluetooth_rtk_h5_flag ;//Default Usb H4 Interfcace ,if ture Uart H5 Interface
 
 
@@ -104,23 +102,23 @@ typedef void (*tINT_CMD_CBACK)(void *p_mem);
 
 
 /* Initialize transport's control block */
-typedef void (*tHCI_INIT)(const void *p_cback,const allocator_t *bufalloc);
+typedef void (*tHCI_INIT)(tINT_CMD_CBACK p_cback,const allocator_t *bufalloc);
 
 /* Do transport's control block clean-up */
 typedef void (*tHCI_CLEANUP)(void);
 
 /* Send HCI command/data to the transport */
-typedef void (*tHCI_SEND)(BT_HDR *p_msg);
+typedef void (*tHCI_SEND)(HC_BT_HDR *p_msg);
 
 /* Handler for HCI upstream path */
-typedef void (*tHCI_RCV)(uint8_t *byte);
+typedef uint16_t (*tHCI_RCV)(uint16_t *byte);
 
 
 
 
 
 /* Handler for sending HCI command from the local module */
-typedef uint8_t (*tHCI_SEND_INT)(uint16_t opcode, BT_HDR *p_buf, \
+typedef uint8_t (*tHCI_SEND_INT)(uint16_t opcode, HC_BT_HDR *p_buf, \
                                   tINT_CMD_CBACK p_cback);
 
 /* Handler for getting acl data length */
@@ -143,7 +141,7 @@ typedef struct {
     tHCI_RCV rcv;
 #endif
 } tHCI_IF;
-#endif
+#endif 
 typedef struct hci_t {
   // Send a low power command, if supported and the low power manager is enabled.
   void (*send_low_power_command)(low_power_command_t command);

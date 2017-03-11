@@ -6,7 +6,7 @@ Module Name:
     rtk_parse.c
 
 Abstract:
-    Contains wifi-bt coex functions implemented by bluedroid stack
+    Contains wifi-bt coex functions implemented by bluedroid stack 
 
 Major Change History:
       When             Who       What
@@ -16,7 +16,7 @@ Major Change History:
 Notes:
        This is designed for wifi-bt Coex in Android 6.0.
 *****************************************************************************/
-
+ 
 #define LOG_TAG "rtk_parse"
 
 #include <utils/Log.h>
@@ -41,7 +41,6 @@ Notes:
 #include <dirent.h>
 #include <signal.h>
 #include <poll.h>
-#include <bt_types.h>
 
 #include "bt_list.h"
 #include "bt_hci_bdroid.h"
@@ -50,6 +49,7 @@ Notes:
 
 #include "rtk_parse.h"
 #include "hcidefs.h"
+#include <sys/syscall.h>
 
 #define RTK_VERSION "2.0"
 
@@ -304,12 +304,14 @@ static void LogMsg(const char *fmt_str, ...)
 static timer_t OsAllocateTimer(int signo)
 {
     struct sigevent sigev;
-    timer_t timerid = NULL;
+    timer_t timerid = (void*)-1;
 
     // Create the POSIX timer to generate signo
-    sigev.sigev_notify = SIGEV_SIGNAL;
+    sigev.sigev_notify = SIGEV_THREAD_ID;
+    sigev.sigev_notify_thread_id = syscall(__NR_gettid);
     sigev.sigev_signo = signo;
     sigev.sigev_value.sival_ptr = &timerid;
+    ALOGE("OsAllocateTimer rtk_parse sigev.sigev_notify_thread_id = syscall(__NR_gettid)!");
 
     //Create the Timer using timer_create signal
     if (timer_create(CLOCK_REALTIME, &sigev, &timerid) == 0)
@@ -319,7 +321,7 @@ static timer_t OsAllocateTimer(int signo)
     else
     {
         ALOGE("timer_create error!");
-        return NULL;
+        return timerid;
     }
 }
 
@@ -442,7 +444,7 @@ int stop_hogp_packet_count_timer()
     return OsStopTimer(rtk_prof.timer_hogp_packet_count);
 }
 
-int start_hogp_packet_count_timer()
+int start_hogp_packet_count_timer()	
 {
     LogMsg("start hogp packet");
     return OsStartTimer(rtk_prof.timer_hogp_packet_count, PACKET_COUNT_TIOMEOUT_VALUE, 1);
@@ -737,10 +739,10 @@ tRTK_PROF_INFO* find_profile_by_handle_dcid_scid(tRTK_PROF* h5, uint16_t handle,
 void rtk_vendor_cmd_to_fw(uint16_t opcode, uint8_t parameter_len, uint8_t* parameter)
 {
     uint8_t temp = 0;
-    BT_HDR  *p_buf=NULL;
+    HC_BT_HDR  *p_buf=NULL;
 
     if(buffer_allocator)
-	    p_buf = (BT_HDR *) buffer_allocator->alloc(BT_HDR_SIZE + HCI_CMD_PREAMBLE_SIZE + parameter_len);
+	    p_buf = (HC_BT_HDR *) buffer_allocator->alloc(BT_HC_HDR_SIZE + HCI_CMD_PREAMBLE_SIZE + parameter_len);
 
 	if(NULL == p_buf)
 	{
@@ -761,14 +763,12 @@ void rtk_vendor_cmd_to_fw(uint16_t opcode, uint8_t parameter_len, uint8_t* param
 	    *p++ = parameter_len;
         memcpy(p, parameter, parameter_len);
     }
-	if(hci_interface) {
-		if(bluetooth_rtk_h5_flag){
-			LogMsg("hci_interface->transmit_int_command Opcode:%x",opcode);
-    		hci_interface->transmit_int_command(opcode,(BT_HDR *)p_buf, NULL);
-		} else {
-			hci_interface->transmit_command(p_buf, NULL, NULL, NULL);
-		}
-  }
+    if(hci_interface)
+    {
+        ALOGE("hci_interface->transmit_command Opcode:%x",opcode);
+        hci_interface->transmit_command(p_buf, NULL, NULL, NULL);
+    }
+    return ;
 }
 
 void rtk_notify_profileinfo_to_fw()
@@ -788,7 +788,7 @@ void rtk_notify_profileinfo_to_fw()
 			handle_number++;
 	}
 
-	buffer_size = 1 + handle_number*3 + 1;
+	buffer_size = 1 + handle_number*3 + 1; 
 
     if(buffer_allocator)
 	    p_buf = (uint8_t *) buffer_allocator->alloc(buffer_size);
@@ -871,15 +871,15 @@ void rtk_check_setup_timer(int8_t profile_index)
         rtk_prof.a2dp_packet_count = 0;
         start_a2dp_packet_count_timer();
     }
-
+    
     if(profile_index == profile_pan) {
         rtk_prof.pan_packet_count = 0;
         start_pan_packet_count_timer();
     }
-
+    
     //hogp & voice share one timer now
     if((profile_index == profile_hogp) || (profile_index == profile_voice)) {
-        if((0 == rtk_prof.profile_refcount[profile_hogp])
+        if((0 == rtk_prof.profile_refcount[profile_hogp]) 
                 && (0 == rtk_prof.profile_refcount[profile_voice])) {
             rtk_prof.hogp_packet_count = 0;
             rtk_prof.voice_packet_count = 0;
@@ -1012,7 +1012,7 @@ void update_hid_active_state(uint16_t handle, uint16_t interval)
 				rtk_prof.profile_status |= BIT(profile_hid);
 		}
 	}
-	else
+	else 
     {
 		if((phci_conn->profile_bitmap &(BIT(profile_hid_interval))))
 		{
@@ -1162,7 +1162,7 @@ void packets_count(uint16_t handle, uint16_t scid, uint16_t length, uint8_t dire
 	    }
 
 	    if(prof_info->profile_index == profile_pan)
-		    rtk_prof.pan_packet_count++;
+		    rtk_prof.pan_packet_count++;    
     }
 }
 
@@ -1301,12 +1301,12 @@ int udpsocket_recv(uint8_t *recv_msg, uint8_t *msg_size)
 	char *hostaddrp;        /* dotted decimal host addr string */
 	int n;                  /* message byte size */
     struct sockaddr_in recv_addr;
-	socklen_t clientlen = sizeof(recv_addr);
-
+	int clientlen = sizeof(recv_addr);
+	
 	struct pollfd pfd = {
 		.events = POLLPRI | POLLIN,
 		.revents = 0,
-		.fd = rtk_prof.udpsocket
+		.fd = rtk_prof.udpsocket	  
 	};
 
 	bzero(buf, MAX_PAYLOAD);
@@ -1758,7 +1758,6 @@ static void udpsocket_receive_thread(void *arg)
 	while(rtk_prof.udpsocket_recv_thread_running)
 	{
 	    memset(msg_recv, 0 , MAX_PAYLOAD);
-		udpsocket_recv(msg_recv, &recv_length);
      	if (udpsocket_recv(msg_recv, &recv_length) == 0)
 			rtk_handle_event_from_wifi(msg_recv);
 	}
@@ -1788,7 +1787,7 @@ int create_udpsocket_socket()
     rtk_prof.udpsocket = socket(AF_INET, SOCK_DGRAM, 0);
     LogMsg("create socket %d", rtk_prof.udpsocket);
 
-	if (rtk_prof.udpsocket < 0)
+	if (rtk_prof.udpsocket < 0) 
 	{
         ALOGE("create udpsocket error...%s\n", strerror(errno));
 		rtk_prof.udpsocket_recv_thread_running = 0;
@@ -1811,7 +1810,7 @@ int create_udpsocket_socket()
 	optval = 1;
 	setsockopt(rtk_prof.udpsocket, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
 
-    if (bind(rtk_prof.udpsocket, (struct sockaddr *)&rtk_prof.server_addr, sizeof(rtk_prof.server_addr)) < 0)
+    if (bind(rtk_prof.udpsocket, (struct sockaddr *)&rtk_prof.server_addr, sizeof(rtk_prof.server_addr)) < 0) 
 	{
         ALOGE("bind udpsocket error...%s\n", strerror(errno));
         rtk_prof.udpsocket_recv_thread_running = 0;
@@ -1876,7 +1875,7 @@ int create_netlink_socket()
     LogMsg("in creat netlink socket");
     rtk_prof.nlsocket = socket(PF_NETLINK, SOCK_RAW, NETLINK_USER);
 
-	if (rtk_prof.nlsocket < 0)
+	if (rtk_prof.nlsocket < 0) 
 	{
         ALOGE("create netlink socket error...%s\n", strerror(errno));
         close(rtk_prof.nlsocket);
@@ -1904,7 +1903,7 @@ int create_netlink_socket()
 void rtk_parse_init(hci_t *hci_if)
 {
 	LogMsg("rtk_profile_init, version: %s", RTK_VERSION);
-
+	
 	pthread_mutex_init(&rtk_prof.profile_mutex, NULL);
     pthread_mutex_init(&rtk_prof.udpsocket_mutex, NULL);
 	alloc_a2dp_packet_count_timer();
@@ -1932,7 +1931,7 @@ void rtk_parse_cleanup()
 	flush_profile_hash(&rtk_prof);
     pthread_mutex_destroy(&rtk_prof.profile_mutex);
 
-    //stop_udpsocket_receive_thread();
+    //stop_udpsocket_receive_thread();    
     pthread_mutex_destroy(&rtk_prof.udpsocket_mutex);
 
     rtk_prof.polling_enable = 0;
@@ -2112,7 +2111,7 @@ static void rtk_handle_cmd_complete_evt(uint8_t*p, uint8_t len)
             LogMsg("received cmd complete event for fc1b");
             poweroff_allowed = 1;
             break;
-
+            
         case HCI_VENDOR_MAILBOX_CMD:
             rtk_handle_vender_mailbox_cmp_evt(p, len);
             break;
@@ -2465,7 +2464,7 @@ void rtk_parse_internal_event_intercept(uint8_t *p_msg)
         case HCI_BLE_EVENT:
 		    rtk_handle_le_meta_evt(p);
 	        break;
-
+        
         default:
             break;
     }
@@ -2515,7 +2514,7 @@ void rtk_parse_command(uint8_t *pp)
     	}
 
         default:
-            break;
+            break;   
     }
 }
 
@@ -2668,3 +2667,5 @@ const rtk_parse_manager_t *rtk_parse_manager_get_interface() {
   buffer_allocator = buffer_allocator_get_interface();
   return &interface;
 }
+
+

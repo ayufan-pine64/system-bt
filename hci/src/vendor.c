@@ -34,10 +34,8 @@
 #include "bdroid_buildcfg.h"
 static const char *VENDOR_LIBRARY_NAME_USB = "libbt-vendor_usb.so";
 static const char *VENDOR_LIBRARY_NAME_UART = "libbt-vendor_uart.so";
-#else
 #endif
 static const char *VENDOR_LIBRARY_NAME = "libbt-vendor.so";
-
 static const char *VENDOR_LIBRARY_SYMBOL_NAME = "BLUETOOTH_VENDOR_LIB_INTERFACE";
 
 static const vendor_t interface;
@@ -62,7 +60,7 @@ static bool vendor_open(
 	  {
 		  lib_handle = dlopen(VENDOR_LIBRARY_NAME_USB,RTLD_NOW);
 		  if (!lib_handle) {
-			  LOG_ERROR(LOG_TAG,"%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_USB,
+			  ALOGE("%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_USB,
 			  dlerror());
 			  goto error;
 		  }
@@ -71,17 +69,17 @@ static bool vendor_open(
 	  {
 		  lib_handle = dlopen(VENDOR_LIBRARY_NAME_UART,RTLD_NOW);
 		  if (!lib_handle) {
-		  LOG_ERROR(LOG_TAG,"%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_UART,
+		  ALOGE("%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME_UART,
 		  dlerror());
 		  goto error;
 		  }
 	  }
 #else
-	lib_handle = dlopen(VENDOR_LIBRARY_NAME, RTLD_NOW);
-	if (!lib_handle) {
+  lib_handle = dlopen(VENDOR_LIBRARY_NAME, RTLD_NOW);
+  if (!lib_handle) {
     LOG_ERROR(LOG_TAG, "%s unable to open %s: %s", __func__, VENDOR_LIBRARY_NAME, dlerror());
-	  goto error;
-	}
+    goto error;
+  }
 #endif
 
   lib_interface = (bt_vendor_interface_t *)dlsym(lib_handle, VENDOR_LIBRARY_SYMBOL_NAME);
@@ -91,7 +89,6 @@ static bool vendor_open(
   }
 
   LOG_INFO(LOG_TAG, "alloc value %p", lib_callbacks.alloc);
-
 #ifdef BLUETOOTH_RTK
   int status = lib_interface->init(&lib_callbacks, (unsigned char *)local_bdaddr,bt_hci_device_node);
 #else
@@ -196,7 +193,6 @@ static void buffer_free_cb(void *buffer) {
   buffer_allocator->free(buffer);
 }
 
-UNUSED_ATTR
 static void transmit_completed_callback(BT_HDR *response, void *context) {
   // Call back to the vendor library if it provided a callback to call.
   if (context) {
