@@ -29,6 +29,9 @@
 #include "hcimsgs.h"
 #include "osi/include/future.h"
 #include "stack/include/btm_ble_api.h"
+#ifdef BLUETOOTH_RTK
+#include "osi/include/log.h"
+#endif
 
 const bt_event_mask_t BLE_EVENT_MASK = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1E, 0x7f}};
@@ -155,6 +158,24 @@ static future_t* start_up(void) {
 
   // Done telling the controller about what page 0 features we support
   // Request the remaining feature pages
+#ifdef BLUETOOTH_RTK
+  if(HCI_LMP_EXTENDED_SUPPORTED(features_classic[0].as_array))
+  {
+	  while (page_number < MAX_FEATURES_CLASSIC_PAGE_COUNT) {
+	    response = AWAIT_COMMAND(packet_factory->make_read_local_extended_features(page_number));
+	    packet_parser->parse_read_local_extended_features_response(
+	      response,
+	      &page_number,
+	      &last_features_classic_page_index,
+	      features_classic,
+	      MAX_FEATURES_CLASSIC_PAGE_COUNT
+	    );
+		if(page_number == last_features_classic_page_index) //max page number == current page number,then break;
+			break;
+		page_number++; //otherwise??read next page
+	  }
+  }
+#else
   while (page_number <= last_features_classic_page_index &&
          page_number < MAX_FEATURES_CLASSIC_PAGE_COUNT) {
     response = AWAIT_COMMAND(
@@ -165,7 +186,7 @@ static future_t* start_up(void) {
 
     page_number++;
   }
-
+#endif
 #if (SC_MODE_INCLUDED == TRUE)
   secure_connections_supported =
       HCI_SC_CTRLR_SUPPORTED(features_classic[2].as_array);
@@ -305,16 +326,34 @@ static uint8_t* get_local_supported_codecs(uint8_t* number_of_codecs) {
   return NULL;
 }
 
-static const bt_device_features_t* get_features_ble(void) {
+static const bt_device_features_t *get_features_ble(void) {
   CHECK(readable);
+  #ifdef BLUETOOTH_RTK
+        if(ble_supported){
+          assert(ble_supported);
+          return &features_ble;
+        } else {
+          return NULL;
+        }
+#else
   CHECK(ble_supported);
   return &features_ble;
+#endif
 }
 
-static const uint8_t* get_ble_supported_states(void) {
+static const uint8_t *get_ble_supported_states(void) {
   CHECK(readable);
+#ifdef BLUETOOTH_RTK
+      if(ble_supported){
   CHECK(ble_supported);
   return ble_supported_states;
+      } else {
+        return NULL;
+      }
+#else
+      CHECK(ble_supported);
+      return ble_supported_states;
+#endif
 }
 
 static bool supports_simple_pairing(void) {
@@ -411,8 +450,17 @@ static uint16_t get_acl_data_size_classic(void) {
 
 static uint16_t get_acl_data_size_ble(void) {
   CHECK(readable);
+#ifdef BLUETOOTH_RTK
+    if(ble_supported){
   CHECK(ble_supported);
   return acl_data_size_ble;
+    } else {
+      return 0;
+    }
+#else
+    CHECK(ble_supported);
+    return acl_data_size_ble;
+#endif
 }
 
 static uint16_t get_acl_packet_size_classic(void) {
@@ -427,8 +475,17 @@ static uint16_t get_acl_packet_size_ble(void) {
 
 static uint16_t get_ble_suggested_default_data_length(void) {
   CHECK(readable);
+#ifdef BLUETOOTH_RTK
+  if(ble_supported){
+    CHECK(ble_supported);
+    return ble_suggested_default_data_length;
+  } else {
+    return 0;
+  }
+#else
   CHECK(ble_supported);
   return ble_suggested_default_data_length;
+#endif
 }
 
 static uint16_t get_ble_maxium_advertising_data_length(void) {
@@ -456,14 +513,32 @@ static uint8_t get_acl_buffer_count_ble(void) {
 
 static uint8_t get_ble_white_list_size(void) {
   CHECK(readable);
+#ifdef BLUETOOTH_RTK
+  if(ble_supported){
+    CHECK(ble_supported);
+    return ble_white_list_size;
+  } else {
+    return 0;
+  }
+#else
   CHECK(ble_supported);
   return ble_white_list_size;
+#endif
 }
 
 static uint8_t get_ble_resolving_list_max_size(void) {
   CHECK(readable);
+#ifdef BLUETOOTH_RTK
+  if(ble_supported){
+    CHECK(ble_supported);
+    return ble_resolving_list_max_size;
+  } else {
+    return 0;
+  }
+#else
   CHECK(ble_supported);
   return ble_resolving_list_max_size;
+#endif
 }
 
 static void set_ble_resolving_list_max_size(int resolving_list_max_size) {
@@ -472,8 +547,12 @@ static void set_ble_resolving_list_max_size(int resolving_list_max_size) {
   if (resolving_list_max_size != 0) {
     CHECK(readable);
   }
+  #ifdef BLUETOOTH_RTK
+  ble_resolving_list_max_size = resolving_list_max_size;
+#else
   CHECK(ble_supported);
   ble_resolving_list_max_size = resolving_list_max_size;
+#endif
 }
 
 static uint8_t get_le_all_initiating_phys() {

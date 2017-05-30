@@ -209,7 +209,10 @@ typedef struct {
 /* timeout to wait for Mx UIH */
 #define RFC_T2_TIMEOUT 20
 /* If something goes wrong and we send DISC we should not wait for min */
-#define RFC_DISC_TIMEOUT 3
+#ifdef BLUETOOTH_RTK
+#define RFC_DISC_TIMEOUT                30    /* If something goes wrong and we send DISC we should not wait for min */
+#else
+#define RFC_DISC_TIMEOUT         
 #define RFC_CLOSE_TIMEOUT 10
 /* first connection to be established on Mx */
 #define RFCOMM_CONN_TIMEOUT 120

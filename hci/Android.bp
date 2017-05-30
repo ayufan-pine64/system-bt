@@ -25,6 +25,12 @@ cc_library_static {
         "src/hci_layer_android.cc",
         "src/hci_packet_factory.cc",
         "src/hci_packet_parser.cc",
+        "src/bt_list.c",
+        "src/bt_skbuff.c",
+        "src/hci_h5.c",
+        "src/hci_hal_h4.cc",
+        "src/rtk_parse.c",
+        "src/vendor.cc",
         "src/packet_fragmenter.cc",
     ],
     local_include_dirs: [
